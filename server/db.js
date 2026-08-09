@@ -2,8 +2,9 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 
-const DB_DIR = path.join(__dirname, 'data');
-const DB_FILE = path.join(DB_DIR, 'db.json');
+const isVercel = process.env.VERCEL === '1' || !!process.env.VERCEL;
+const DB_FILE = isVercel ? '/tmp/db.json' : path.join(__dirname, 'data', 'db.json');
+const DB_DIR = path.dirname(DB_FILE);
 
 let useMock = false;
 
