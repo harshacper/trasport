@@ -11,6 +11,7 @@ server/data/db.json
 # Production builds
 dist/
 client/dist/
+/public/
 
 # System / OS files
 .DS_Store
