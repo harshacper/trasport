@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+client/node_modules/
+
+# Local databases
+server/data/db.json
+
+# Environment variables
+.env
+
+# Production builds
+dist/
+client/dist/
+
+# System / OS files
+.DS_Store
+Thumbs.db
+
+# Agent workspaces/logs
+.agents/
+.gemini/
