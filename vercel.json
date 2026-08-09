@@ -1,29 +1,21 @@
 {
   "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "server.js",
-      "use": "@vercel/node"
+      "source": "/api/:path*",
+      "destination": "/api/index.js"
     },
     {
-      "src": "client/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "server.js"
+      "source": "/socket.io/:path*",
+      "destination": "/api/index.js"
     },
     {
-      "handle": "filesystem"
+      "source": "/assets/:path*",
+      "destination": "/assets/:path*"
     },
     {
-      "src": "/(.*)",
-      "dest": "client/$1"
+      "source": "/((?!api|socket.io|assets).*)",
+      "destination": "/index.html"
     }
   ]
 }
