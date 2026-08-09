@@ -19,3 +19,5 @@ Thumbs.db
 # Agent workspaces/logs
 .agents/
 .gemini/
+
+.vercel
