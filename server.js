@@ -5,6 +5,7 @@ const cors = require('cors');
 const path = require('path');
 const db = require('./server/db');
 const auth = require('./server/auth');
+const supabase = require('./server/supabase');
 
 const app = express();
 const server = http.createServer(app);
@@ -734,6 +735,62 @@ app.post('/api/admin/drivers/:id/toggle-block', auth.authenticateToken, auth.req
     await db.Driver.findByIdAndUpdate(req.params.id, { status: newStatus });
 
     res.json({ success: true, status: newStatus });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Supabase Todos API CRUD routes
+app.get('/api/todos', auth.authenticateToken, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('todos')
+      .select('*')
+      .order('id', { ascending: true });
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/todos', auth.authenticateToken, async (req, res) => {
+  const { name } = req.body;
+  try {
+    const { data, error } = await supabase
+      .from('todos')
+      .insert([{ name }])
+      .select();
+    if (error) throw error;
+    res.status(201).json(data[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.patch('/api/todos/:id', auth.authenticateToken, async (req, res) => {
+  const { completed } = req.body;
+  try {
+    const { data, error } = await supabase
+      .from('todos')
+      .update({ completed })
+      .eq('id', req.params.id)
+      .select();
+    if (error) throw error;
+    res.json(data[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/todos/:id', auth.authenticateToken, async (req, res) => {
+  try {
+    const { error } = await supabase
+      .from('todos')
+      .delete()
+      .eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

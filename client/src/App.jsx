@@ -96,6 +96,11 @@ export default function App() {
   
   // Driver Earnings statistics
   const [driverEarnings, setDriverEarnings] = useState(null);
+
+  // Supabase Integration States
+  const [todos, setTodos] = useState([]);
+  const [newTodoName, setNewTodoName] = useState('');
+  const [loadingTodos, setLoadingTodos] = useState(false);
   
   // Socket ref
   const socketRef = useRef(null);
@@ -176,6 +181,87 @@ export default function App() {
       fetchAdminData();
     }
   };
+
+  const fetchTodos = async () => {
+    setLoadingTodos(true);
+    try {
+      const res = await fetch(`${SOCKET_URL}api/todos`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setTodos(data || []);
+      }
+    } catch (e) {
+      console.error("Error fetching todos:", e);
+    } finally {
+      setLoadingTodos(false);
+    }
+  };
+
+  const handleAddTodo = async (e) => {
+    e.preventDefault();
+    if (!newTodoName.trim()) return;
+    try {
+      const res = await fetch(`${SOCKET_URL}api/todos`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ name: newTodoName })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setTodos(prev => [...prev, data]);
+        setNewTodoName('');
+      } else {
+        alert(data.error || 'Failed to add todo');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleToggleTodo = async (todo) => {
+    const nextCompleted = !todo.completed;
+    try {
+      const res = await fetch(`${SOCKET_URL}api/todos/${todo.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ completed: nextCompleted })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setTodos(prev => prev.map(t => t.id === todo.id ? data : t));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteTodo = async (todoId) => {
+    try {
+      const res = await fetch(`${SOCKET_URL}api/todos/${todoId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setTodos(prev => prev.filter(t => t.id !== todoId));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (token && activeTab === 'todos') {
+      fetchTodos();
+    }
+  }, [token, activeTab]);
 
   // REST API Actions
   const fetchProfile = async () => {
@@ -733,6 +819,14 @@ export default function App() {
                 My Earnings
               </button>
             )}
+
+            <button 
+              className={`btn ${activeTab === 'todos' ? 'btn-primary' : 'btn-secondary'}`}
+              style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+              onClick={() => setActiveTab('todos')}
+            >
+              Supabase Todos
+            </button>
 
             {/* Notifications Bell */}
             <div style={{ position: 'relative' }}>
@@ -1923,6 +2017,104 @@ export default function App() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* =============================================
+            H. SUPABASE TODOS INTEGRATION PANEL
+            ============================================= */}
+        {activeTab === 'todos' && (
+          <div className="glass-panel" style={{ maxWidth: '650px', margin: '1.5rem auto', padding: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '0.75rem' }}>
+              <div>
+                <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  📋 Supabase Live Todos
+                </h2>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                  Connected database table: <code>todos</code> on Supabase
+                </p>
+              </div>
+              <button className="btn btn-secondary" onClick={() => setActiveTab('dashboard')} style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>Back</button>
+            </div>
+
+            {/* Todo Input form */}
+            <form onSubmit={handleAddTodo} style={{ display: 'flex', gap: '0.75rem', marginBottom: '2rem' }}>
+              <input 
+                type="text" 
+                placeholder="What needs to be done?" 
+                value={newTodoName}
+                onChange={e => setNewTodoName(e.target.value)}
+                style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.2)', border: '1px solid var(--border-glass)', borderRadius: '8px', padding: '0.75rem 1rem', color: '#fff', fontSize: '0.9rem' }}
+              />
+              <button type="submit" className="btn btn-primary" style={{ padding: '0.75rem 1.5rem', background: 'linear-gradient(135deg, #10B981, #059669)', border: 'none' }}>
+                Add Task
+              </button>
+            </form>
+
+            {/* Todo List */}
+            {loadingTodos ? (
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+                <div style={{ border: '3px solid rgba(255,255,255,0.1)', borderTop: '3px solid var(--primary)', borderRadius: '50%', width: '30px', height: '30px', margin: '0 auto 1rem' }}></div>
+                Loading tasks from Supabase...
+              </div>
+            ) : todos.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem', backgroundColor: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.08)', color: 'var(--text-secondary)' }}>
+                No tasks found. Use the input box above to add your first live task.
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {todos.map(todo => (
+                  <div 
+                    key={todo.id} 
+                    className="glass-card" 
+                    style={{ 
+                      padding: '1rem', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'space-between',
+                      border: '1px solid rgba(255,255,255,0.05)',
+                      background: todo.completed ? 'rgba(16, 185, 129, 0.03)' : 'rgba(255,255,255,0.02)',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={!!todo.completed} 
+                        onChange={() => handleToggleTodo(todo)}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#10B981' }}
+                      />
+                      <span style={{ 
+                        fontSize: '0.95rem', 
+                        color: todo.completed ? 'var(--text-secondary)' : '#fff',
+                        textDecoration: todo.completed ? 'line-through' : 'none',
+                        transition: 'all 0.3s ease'
+                      }}>
+                        {todo.name}
+                      </span>
+                    </div>
+                    
+                    <button 
+                      className="btn btn-secondary" 
+                      onClick={() => handleDeleteTodo(todo.id)}
+                      style={{ 
+                        padding: '0.35rem 0.65rem', 
+                        fontSize: '0.75rem', 
+                        borderColor: 'transparent', 
+                        color: '#F87171', 
+                        backgroundColor: 'rgba(248, 113, 113, 0.08)'
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+              🎯 Changes will be immediately synchronized in real-time with your cloud database instance.
             </div>
           </div>
         )}
