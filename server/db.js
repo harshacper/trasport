@@ -194,7 +194,31 @@ const createModel = (table) => {
   };
 };
 
+const getNextLoadId = async () => {
+  const { data, error } = await supabase
+    .from('loads')
+    .select('id')
+    .order('id', { ascending: false })
+    .limit(1);
+  if (error) return '1';
+  if (!data || data.length === 0) return '1';
+  return (Number(data[0].id) + 1).toString();
+};
+
+const getNextTripId = async () => {
+  const { data, error } = await supabase
+    .from('trips')
+    .select('id')
+    .order('id', { ascending: false })
+    .limit(1);
+  if (error) return '1';
+  if (!data || data.length === 0) return '1';
+  return (Number(data[0].id) + 1).toString();
+};
+
 module.exports = {
+  getNextLoadId,
+  getNextTripId,
   User: createModel('users'),
   Company: createModel('companies'),
   Driver: createModel('drivers'),
