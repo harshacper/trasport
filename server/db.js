@@ -12,6 +12,7 @@ const mapRow = (row) => {
   
   const camelObj = {};
   for (const key in clone) {
+    if (key.startsWith('_')) continue;
     const camelKey = key.replace(/_([a-z])/g, (match, letter) => letter.toUpperCase());
     camelObj[camelKey] = clone[key];
   }
@@ -31,7 +32,7 @@ const mapDoc = (doc) => {
   const result = {};
   for (const key in doc) {
     // Skip helper methods or id properties that are automatically handled by PG serial primary keys
-    if (key === '_id' || key === 'id' || typeof doc[key] === 'function') continue;
+    if (key === '_id' || key.toLowerCase() === 'id' || typeof doc[key] === 'function') continue;
     
     // Skip conversion for JSONB nested columns which should retain their JS structure
     if (key === 'pickup' || key === 'delivery' || key === 'goods' || key === 'payment' || key === 'location' || key === 'ratings') {
