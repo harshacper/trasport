@@ -34,8 +34,20 @@ const mapDoc = (doc) => {
     if (key === '_id' || key === 'id' || typeof doc[key] === 'function') continue;
     
     // Skip conversion for JSONB nested columns which should retain their JS structure
-    if (key === 'goods' || key === 'vehicle' || key === 'location') {
+    if (key === 'pickup' || key === 'delivery' || key === 'goods' || key === 'payment' || key === 'location') {
       result[key] = doc[key];
+      continue;
+    }
+    if (key === 'vehicleRequirement') {
+      result.vehicle_requirement = doc[key];
+      continue;
+    }
+    if (key === 'additionalInfo') {
+      result.additional_info = doc[key];
+      continue;
+    }
+    if (key === 'currentLocation') {
+      result.current_location = doc[key];
       continue;
     }
     
