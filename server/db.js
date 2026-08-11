@@ -34,7 +34,7 @@ const mapDoc = (doc) => {
     if (key === '_id' || key === 'id' || typeof doc[key] === 'function') continue;
     
     // Skip conversion for JSONB nested columns which should retain their JS structure
-    if (key === 'pickup' || key === 'delivery' || key === 'goods' || key === 'payment' || key === 'location') {
+    if (key === 'pickup' || key === 'delivery' || key === 'goods' || key === 'payment' || key === 'location' || key === 'ratings') {
       result[key] = doc[key];
       continue;
     }
@@ -48,6 +48,14 @@ const mapDoc = (doc) => {
     }
     if (key === 'currentLocation') {
       result.current_location = doc[key];
+      continue;
+    }
+    if (key === 'pickupProof') {
+      result.pickup_proof = doc[key];
+      continue;
+    }
+    if (key === 'deliveryProof') {
+      result.delivery_proof = doc[key];
       continue;
     }
     
@@ -170,20 +178,56 @@ const createModel = (table) => {
     },
     
     findByIdAndUpdate: async (id, update) => {
-      const mapped = mapDoc(update);
+      const { data: current, error: fetchErr } = await supabase.from(table).select('*').eq('id', id).maybeSingle();
+      if (fetchErr) throw fetchErr;
+      if (!current) return null;
+
+      const doc = mapRow(current);
+      for (const key in update) {
+        if (key.includes('.')) {
+          const parts = key.split('.');
+          let temp = doc;
+          for (let i = 0; i < parts.length - 1; i++) {
+            if (!temp[parts[i]]) temp[parts[i]] = {};
+            temp = temp[parts[i]];
+          }
+          temp[parts[parts.length - 1]] = update[key];
+        } else {
+          doc[key] = update[key];
+        }
+      }
+
+      const mapped = mapDoc(doc);
       const { data, error } = await supabase.from(table).update(mapped).eq('id', id).select();
       if (error) throw error;
-      if (!data || data.length === 0) return null;
       return mapRow(data[0]);
     },
     
     findOneAndUpdate: async (query, update) => {
-      const mapped = mapDoc(update);
-      let builder = supabase.from(table).update(mapped).select('*');
-      builder = mapQuery(query, builder);
-      const { data, error } = await builder;
+      let findBuilder = supabase.from(table).select('*');
+      findBuilder = mapQuery(query, findBuilder);
+      const { data: current, error: fetchErr } = await findBuilder.maybeSingle();
+      if (fetchErr) throw fetchErr;
+      if (!current) return null;
+
+      const doc = mapRow(current);
+      for (const key in update) {
+        if (key.includes('.')) {
+          const parts = key.split('.');
+          let temp = doc;
+          for (let i = 0; i < parts.length - 1; i++) {
+            if (!temp[parts[i]]) temp[parts[i]] = {};
+            temp = temp[parts[i]];
+          }
+          temp[parts[parts.length - 1]] = update[key];
+        } else {
+          doc[key] = update[key];
+        }
+      }
+
+      const mapped = mapDoc(doc);
+      const { data, error } = await supabase.from(table).update(mapped).eq('id', current.id).select();
       if (error) throw error;
-      if (!data || data.length === 0) return null;
       return mapRow(data[0]);
     },
     
