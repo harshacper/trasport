@@ -93,9 +93,9 @@ const mapQuery = (query, builder) => {
     
     const val = query[key];
     if (val && typeof val === 'object' && !Array.isArray(val)) {
-      if (val.$in) {
+      if (val.$in !== undefined) {
         builder = builder.in(dbKey, val.$in);
-      } else if (val.$ne) {
+      } else if (val.$ne !== undefined) {
         builder = builder.neq(dbKey, val.$ne);
       }
     } else {

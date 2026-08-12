@@ -188,7 +188,7 @@ app.post('/api/auth/register', async (req, res) => {
       profile = await db.Driver.create({
         userId: user._id,
         email: user.email,
-        status: 'Pending Verification',
+        status: 'Available',
         ...driverDetails
       });
     } else if (role === 'admin') {
