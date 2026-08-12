@@ -804,19 +804,24 @@ app.get('*', (req, res) => {
 // Seed Initial Data function
 async function seedInitialData() {
   try {
-    const userCount = await db.User.find({});
-    if (userCount.length === 0) {
-      console.log("🌱 Seeding initial accounts...");
-      
-      // 1. Admin
+    console.log("🌱 Checking default accounts...");
+    
+    // 1. Admin
+    const adminExists = await db.User.findOne({ email: 'admin@transport.com' });
+    if (!adminExists) {
+      console.log("🌱 Seeding Admin account...");
       const adminPass = await auth.hashPassword('admin123');
       await db.User.create({
         email: 'admin@transport.com',
         password: adminPass,
         role: 'admin'
       });
+    }
 
-      // 2. Company
+    // 2. Company
+    const companyExists = await db.User.findOne({ email: 'company@transport.com' });
+    if (!companyExists) {
+      console.log("🌱 Seeding Company account...");
       const companyPass = await auth.hashPassword('company123');
       const companyUser = await db.User.create({
         email: 'company@transport.com',
@@ -838,8 +843,12 @@ async function seedInitialData() {
         rating: 5.0,
         tripsCount: 0
       });
+    }
 
-      // 3. Driver (Ravi Kumar - Verified/Available)
+    // 3. Driver (Ravi Kumar - Available/Verified)
+    const driverExists = await db.User.findOne({ email: 'driver@transport.com' });
+    if (!driverExists) {
+      console.log("🌱 Seeding Driver (Ravi) account...");
       const driverPass = await auth.hashPassword('driver123');
       const driverUser = await db.User.create({
         email: 'driver@transport.com',
@@ -869,8 +878,12 @@ async function seedInitialData() {
         rating: 4.8,
         tripsCount: 125
       });
+    }
 
-      // 4. Pending Verification Driver
+    // 4. Pending Verification Driver (Suresh Kumar)
+    const sureshExists = await db.User.findOne({ email: 'suresh@transport.com' });
+    if (!sureshExists) {
+      console.log("🌱 Seeding Driver (Suresh) account...");
       const driverPass2 = await auth.hashPassword('driver123');
       const driverUser2 = await db.User.create({
         email: 'suresh@transport.com',
@@ -900,15 +913,11 @@ async function seedInitialData() {
         rating: 4.6,
         tripsCount: 42
       });
-
-      console.log("✅ Seeding completed! Default accounts ready:");
-      console.log("   - Admin: admin@transport.com / admin123");
-      console.log("   - Company: company@transport.com / company123");
-      console.log("   - Driver (Ravi Kumar): driver@transport.com / driver123");
-      console.log("   - Driver (Suresh Kumar - Unverified): suresh@transport.com / driver123");
     }
+
+    console.log("✅ Seed check completed successfully!");
   } catch (err) {
-    console.error("Seeding failed", err);
+    console.error("Seeding check failed", err);
   }
 }
 
