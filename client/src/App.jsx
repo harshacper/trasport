@@ -714,54 +714,6 @@ export default function App() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
-      {/* 1. DEMO CONTROLLER HUD PANEL */}
-      <div style={{
-        background: 'linear-gradient(90deg, #1e293b 0%, #0f172a 100%)',
-        borderBottom: '2px solid rgba(255,255,255,0.1)',
-        padding: '0.75rem 1rem',
-        zIndex: 50,
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '0.75rem'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span className="badge" style={{ backgroundColor: 'rgba(59, 130, 246, 0.2)', color: '#60A5FA', fontSize: '0.7rem' }}>DEMO PORTAL</span>
-          <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', fontWeight: 'bold' }}>Quick Switch Actor Logins:</span>
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <button 
-            className="btn btn-secondary" 
-            style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', borderColor: role === 'company' ? 'var(--color-company)' : 'rgba(255,255,255,0.1)', color: role === 'company' ? '#10B981' : '#fff' }}
-            onClick={() => handleDemoLogin('company@transport.com', 'company123')}
-          >
-            🏢 Company (ABC Foods)
-          </button>
-          <button 
-            className="btn btn-secondary" 
-            style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', borderColor: (role === 'driver' && profile?.driverName === 'Ravi Kumar') ? 'var(--color-driver)' : 'rgba(255,255,255,0.1)', color: (role === 'driver' && profile?.driverName === 'Ravi Kumar') ? '#F59E0B' : '#fff' }}
-            onClick={() => handleDemoLogin('driver@transport.com', 'driver123')}
-          >
-            🚛 Driver (Ravi - Available)
-          </button>
-          <button 
-            className="btn btn-secondary" 
-            style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', borderColor: (role === 'driver' && profile?.driverName === 'Suresh Kumar') ? 'var(--color-driver)' : 'rgba(255,255,255,0.1)', color: (role === 'driver' && profile?.driverName === 'Suresh Kumar') ? '#986B0E' : '#fff' }}
-            onClick={() => handleDemoLogin('suresh@transport.com', 'driver123')}
-          >
-            🚛 Driver (Suresh - Pending)
-          </button>
-          <button 
-            className="btn btn-secondary" 
-            style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', borderColor: role === 'admin' ? 'var(--color-admin)' : 'rgba(255,255,255,0.1)', color: role === 'admin' ? '#3B82F6' : '#fff' }}
-            onClick={() => handleDemoLogin('admin@transport.com', 'admin123')}
-          >
-            👨💼 Platform Admin
-          </button>
-        </div>
-      </div>
-
       {/* 2. CORE NAVBAR */}
       <header className="glass-panel" style={{
         margin: '1rem',
